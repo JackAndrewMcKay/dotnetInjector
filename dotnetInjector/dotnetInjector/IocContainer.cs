@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace dotnetInjector
 {
@@ -8,7 +9,55 @@ namespace dotnetInjector
 		{
 			var type = typeof(T);
 
-			return Activator.CreateInstance(type) as T;
+			return Get(type) as T;
+		}
+
+		private object Get(Type type)
+		{
+			var selectedConstructor = GetConstructorWithMostArguments(type);
+			var parameters = selectedConstructor.GetParameters();
+
+			if (parameters.Length == 0)
+			{
+				return Activator.CreateInstance(type);
+			}
+
+			var injectedArguments = new object[parameters.Length];
+
+			for (var i = 0; i < parameters.Length; i++)
+			{
+				var parameterType = parameters[i].ParameterType;
+				var resolvedParameter = Get(parameterType);
+				injectedArguments[i] = resolvedParameter;
+			}
+			return Activator.CreateInstance(type, injectedArguments);
+		}
+
+		private ConstructorInfo GetConstructorWithMostArguments(Type type)
+		{
+			var constructors = type.GetConstructors();
+
+			ConstructorInfo constructorWithMostParameters = null;
+			var mostParameters = -1;
+
+			foreach (var constructor in constructors)
+			{
+				var parameters = constructor.GetParameters();
+				var length = parameters.Length;
+
+				if (length > mostParameters)
+				{
+					mostParameters = length;
+					constructorWithMostParameters = constructor;
+				}
+			}
+
+			if (constructorWithMostParameters == null)
+			{
+				throw new InvalidOperationException($"No constructor found for type {type}");
+			}
+
+			return constructorWithMostParameters;
 		}
 	}
 }
