@@ -2,7 +2,7 @@
 
 namespace UnitTests
 {
-	public class ParameterlessClass
+	public class ParameterlessClass : ISimpleInterface
 	{
 		public string Identifier { get; }
 

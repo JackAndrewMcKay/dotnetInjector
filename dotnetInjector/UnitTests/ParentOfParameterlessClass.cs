@@ -2,7 +2,7 @@
 
 namespace UnitTests
 {
-	public class ParentOfParameterlessClass
+	public class ParentOfParameterlessClass : ISimpleInterface
 	{
 		public ParameterlessClass A { get; }
 		public ParameterlessClass B { get; }
@@ -11,6 +11,10 @@ namespace UnitTests
 		{
 			A = a ?? throw new ArgumentNullException(nameof(a));
 			B = b ?? throw new ArgumentNullException(nameof(b));
+
+			Identifier = A.Identifier + B.Identifier;
 		}
+
+		public string Identifier { get; }
 	}
 }

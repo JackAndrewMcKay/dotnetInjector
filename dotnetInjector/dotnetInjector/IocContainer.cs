@@ -1,15 +1,36 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace dotnetInjector
 {
 	public class IocContainer
 	{
+		private readonly Dictionary<Type, BindingConfiguration> _map;
+
+		public IocContainer()
+		{
+			_map = new Dictionary<Type, BindingConfiguration>();
+		}
+
 		public T Get<T>() where T : class
 		{
 			var type = typeof(T);
 
+			if (_map.TryGetValue(type, out BindingConfiguration configuration))
+			{
+				return Get(configuration.ResolvedType) as T;
+			}
+
 			return Get(type) as T;
+		}
+
+		public BindingConfiguration Bind<T>() where T : class
+		{
+			var configuration = new BindingConfiguration(typeof(T));
+			_map.Add(typeof(T), configuration);
+
+			return configuration;
 		}
 
 		private object Get(Type type)
